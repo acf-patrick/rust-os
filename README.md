@@ -1,0 +1,1 @@
+Small OS written in Rust. Implementation uses bare metal Rust.
