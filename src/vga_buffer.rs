@@ -1,7 +1,6 @@
 use core::fmt;
 use lazy_static::lazy_static;
 use spin::Mutex;
-use std::println;
 use volatile::Volatile;
 
 lazy_static! {
@@ -14,19 +13,22 @@ lazy_static! {
 
 #[macro_export]
 macro_rules! print {
-    ($($arg:tt)*) => ($crate::io::_print(format_args!($($arg)*)));
+    ($($arg:tt)*) => ($crate::vga_buffer::_print(format_args!($($arg)*)));
 }
 
 #[macro_export]
 macro_rules! println {
-    () => (print!("\n"));
-    ($($arg:tt)*) => (print!("{}\n", format_args!($($arg)*)));
+    () => ($crate::print!("\n"));
+    ($($arg:tt)*) => {{
+        $crate::print!($($arg)*);
+        $crate::print!("\n");
+    }};
 }
 
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
-    WRITER.lock().write_fmt(args).unwrap();
+    write!(WRITER.lock(), "{}", args).unwrap();
 }
 
 #[allow(dead_code)]
@@ -119,10 +121,10 @@ impl Writer {
                 let character = self.buffer.chars[row][col].read();
                 self.buffer.chars[row - 1][col].write(character);
             }
-
-            self.clear_row(BUFFER_HEIGHT - 1);
-            self.column_position = 0;
         }
+
+        self.clear_row(BUFFER_HEIGHT - 1);
+        self.column_position = 0;
     }
 
     fn clear_row(&mut self, row: usize) {
@@ -144,7 +146,7 @@ impl fmt::Write for Writer {
     }
 }
 
-pub fn print_something() {
+/* pub fn print_something() {
     use core::fmt::Write;
     let mut writer = Writer {
         column_position: 0,
@@ -156,3 +158,4 @@ pub fn print_something() {
     writer.write_string("ello! ");
     write!(writer, "The numbers are {} and {}", 42, 1.0 / 3.0).unwrap();
 }
+ */
