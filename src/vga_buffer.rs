@@ -28,7 +28,7 @@ macro_rules! println {
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
-    write!(WRITER.lock(), "{}", args).unwrap();
+    write!(WRITER.lock(), "{args}").unwrap();
 }
 
 #[allow(dead_code)]
